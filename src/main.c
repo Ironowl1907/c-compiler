@@ -1,7 +1,9 @@
+#include "lexer.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 int main(int argc, char *argv[]) {
+  // Argument parsing
   if (argc < 2) {
     printf("Expected file path\n");
     return 1;
@@ -28,7 +30,12 @@ int main(int argc, char *argv[]) {
   buffer[file_size] = '\0';
   fclose(file);
 
-  printf("Input file: \n %s", buffer);
+  // Create lexer
+  lexer_t *lexer = lexer_create(buffer);
+	printf("%s", lexer->data);
+
+  // Cleanup
+  lexer_delete(lexer);
 
   return 0;
 }
