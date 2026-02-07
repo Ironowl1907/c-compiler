@@ -18,6 +18,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         -Wall 
         -Wextra 
         -O0 
+				-Wpedantic
     )
 endif()
 

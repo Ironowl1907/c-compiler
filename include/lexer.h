@@ -1,6 +1,8 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include <stddef.h>
+#include <stdint.h>
 typedef enum {
   TOKEN_TYPE_IDENTIFIER,
   TOKEN_TYPE_LITTERAL,
@@ -13,9 +15,21 @@ typedef enum {
   TOKEN_TYPE_LPARENTESIS,
   TOKEN_TYPE_RPARENTESIS,
 
+  TOKEN_TYPE_RETURN,
+  TOKEN_TYPE_INT,
+
 } token_type_e;
 
 typedef struct {
+  uint32_t line;
+  uint32_t column;
+
+} position_t;
+
+typedef struct {
+  token_type_e type;
+  char *val;
+  position_t pos;
 
 } token_t;
 
@@ -23,8 +37,9 @@ typedef struct {
   // Must be null terminated
   char *data;
   token_t *tokens;
-  char *data_cursor;
-  token_t *token_cursor;
+  size_t reserved_tokens;
+  uint32_t data_cursor;
+  uint32_t last_token;
 
 } lexer_t;
 
