@@ -32,7 +32,9 @@ int main(int argc, char *argv[]) {
 
   // Create lexer
   lexer_t *lexer = lexer_create(buffer);
-	printf("%s", lexer->data);
+  printf("%s", lexer->data);
+
+  lexer_lex(lexer);
 
   // Cleanup
   lexer_delete(lexer);
