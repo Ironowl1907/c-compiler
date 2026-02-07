@@ -6,7 +6,8 @@
 
 static char peek(lexer_t *ctx);
 static char consume(lexer_t *ctx);
-static int append_token(lexer_t *ctx, token_type_e type, char *val);
+static int append_token(lexer_t *ctx, token_type_e type, char *start,
+                        uint32_t size, position_t pos);
 
 lexer_t *lexer_create(const char *data) {
   lexer_t *lexer = malloc(sizeof *lexer);
@@ -37,10 +38,6 @@ void lexer_delete(lexer_t *ctx) {
   if (!ctx)
     return;
 
-  for (uint32_t i = 0; i < ctx->last_token; ++i) {
-    free(ctx->tokens[i].val);
-  }
-
   free(ctx->tokens);
   free(ctx->data);
   free(ctx);
@@ -61,7 +58,8 @@ static char consume(lexer_t *ctx) {
   return c;
 }
 
-static int append_token(lexer_t *ctx, token_type_e type, char *val) {
+static int append_token(lexer_t *ctx, token_type_e type, char *start,
+                        uint32_t size, position_t pos) {
   if (!ctx->tokens || ctx->last_token == ctx->reserved_tokens) {
     size_t new_cap = ctx->tokens ? ctx->reserved_tokens * 2 : 8;
     token_t *tmp = realloc(ctx->tokens, new_cap * sizeof *ctx->tokens);
@@ -74,8 +72,8 @@ static int append_token(lexer_t *ctx, token_type_e type, char *val) {
 
   ctx->tokens[ctx->last_token++] = (token_t){
       .type = type,
-      .val = val,
-      .pos = {ctx->line, ctx->column},
+      .data = {start, size},
+      .pos = pos,
   };
 
   return 0;
@@ -88,83 +86,75 @@ int lexer_lex(lexer_t *ctx) {
   while (peek(ctx) != '\0') {
     char c = peek(ctx);
 
-    if (isspace(c)) {
+    if (isspace((unsigned char)c)) {
       consume(ctx);
       continue;
     }
 
+    position_t start_pos = {ctx->line, ctx->column};
+    char *start = ctx->data + ctx->data_cursor;
+
     switch (c) {
     case '+':
       consume(ctx);
-      append_token(ctx, TOKEN_TYPE_PLUS, strdup("+"));
+      append_token(ctx, TOKEN_TYPE_PLUS, start, 1, start_pos);
       break;
     case '-':
       consume(ctx);
-      append_token(ctx, TOKEN_TYPE_MINUS, strdup("-"));
+      append_token(ctx, TOKEN_TYPE_MINUS, start, 1, start_pos);
       break;
     case '*':
       consume(ctx);
-      append_token(ctx, TOKEN_TYPE_STAR, strdup("*"));
+      append_token(ctx, TOKEN_TYPE_STAR, start, 1, start_pos);
       break;
     case '/':
       consume(ctx);
-      append_token(ctx, TOKEN_TYPE_FSLASH, strdup("/"));
+      append_token(ctx, TOKEN_TYPE_FSLASH, start, 1, start_pos);
       break;
     case '(':
       consume(ctx);
-      append_token(ctx, TOKEN_TYPE_LPARENTESIS, strdup("("));
+      append_token(ctx, TOKEN_TYPE_LPARENTESIS, start, 1, start_pos);
       break;
     case ')':
       consume(ctx);
-      append_token(ctx, TOKEN_TYPE_RPARENTESIS, strdup(")"));
+      append_token(ctx, TOKEN_TYPE_RPARENTESIS, start, 1, start_pos);
       break;
     case '{':
       consume(ctx);
-      append_token(ctx, TOKEN_TYPE_LBRACE, strdup("{"));
+      append_token(ctx, TOKEN_TYPE_LBRACE, start, 1, start_pos);
       break;
     case '}':
       consume(ctx);
-      append_token(ctx, TOKEN_TYPE_RBRACE, strdup("}"));
+      append_token(ctx, TOKEN_TYPE_RBRACE, start, 1, start_pos);
       break;
     case ';':
       consume(ctx);
-      append_token(ctx, TOKEN_TYPE_SEMICOLON, strdup(";"));
+      append_token(ctx, TOKEN_TYPE_SEMICOLON, start, 1, start_pos);
       break;
 
     default:
-      if (isdigit(c)) {
-        char *start = ctx->data + ctx->data_cursor;
-        while (isdigit(peek(ctx)))
+      if (isdigit((unsigned char)c)) {
+        while (isdigit((unsigned char)peek(ctx)))
           consume(ctx);
 
-        size_t len = ctx->data + ctx->data_cursor - start;
-        char *num = malloc(len + 1);
-        memcpy(num, start, len);
-        num[len] = '\0';
-
-        append_token(ctx, TOKEN_TYPE_INT_LITERAL, num);
+        uint32_t size = ctx->data + ctx->data_cursor - start;
+        append_token(ctx, TOKEN_TYPE_INT_LITERAL, start, size, start_pos);
         continue;
       }
 
-      if (isalpha(c) || c == '_') {
-        char *start = ctx->data + ctx->data_cursor;
+      if (isalpha((unsigned char)c) || c == '_') {
         consume(ctx);
-        while (isalnum(peek(ctx)) || peek(ctx) == '_')
+        while (isalnum((unsigned char)peek(ctx)) || peek(ctx) == '_')
           consume(ctx);
 
-        size_t len = ctx->data + ctx->data_cursor - start;
-        char *id = malloc(len + 1);
-        memcpy(id, start, len);
-        id[len] = '\0';
+        uint32_t size = ctx->data + ctx->data_cursor - start;
 
-        if (strcmp(id, "return") == 0) {
-          free(id);
-          append_token(ctx, TOKEN_TYPE_RETURN, strdup("return"));
-        } else if (strcmp(id, "int") == 0) {
-          free(id);
-          append_token(ctx, TOKEN_TYPE_KW_INT, strdup("int"));
+        if (size == 6 && memcmp(start, "return", 6) == 0) {
+          append_token(ctx, TOKEN_TYPE_RETURN, start, size, start_pos);
+        } else if (size == 3 && memcmp(start, "int", 3) == 0) {
+          append_token(ctx, TOKEN_TYPE_KW_INT, start, size, start_pos);
         } else {
-          append_token(ctx, TOKEN_TYPE_IDENTIFIER, id);
+          append_token(ctx, TOKEN_TYPE_IDENTIFIER, start, size, start_pos);
         }
 
         continue;
@@ -176,6 +166,8 @@ int lexer_lex(lexer_t *ctx) {
     }
   }
 
-  append_token(ctx, TOKEN_TYPE_EOF, strdup("<eof>"));
+  append_token(ctx, TOKEN_TYPE_EOF, ctx->data + ctx->data_cursor, 0,
+               (position_t){ctx->line, ctx->column});
+
   return 0;
 }
