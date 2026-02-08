@@ -1,6 +1,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include "str_slice.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -29,10 +30,6 @@ typedef struct {
   uint32_t column;
 } position_t;
 
-typedef struct {
-  char *start;
-  uint32_t size;
-} str_slice_t;
 
 typedef struct {
   token_type_e type;
