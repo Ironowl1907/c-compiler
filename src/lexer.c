@@ -171,3 +171,61 @@ int lexer_lex(lexer_t *ctx) {
 
   return 0;
 }
+
+static const char *token_type_to_string(token_type_e type) {
+  // clang-format off
+  switch (type) {
+  case TOKEN_TYPE_IDENTIFIER:   return "IDENTIFIER";
+  case TOKEN_TYPE_INT_LITERAL:  return "INT_LITERAL";
+
+  case TOKEN_TYPE_PLUS:         return "PLUS";
+  case TOKEN_TYPE_MINUS:        return "MINUS";
+  case TOKEN_TYPE_STAR:         return "STAR";
+  case TOKEN_TYPE_FSLASH:       return "FSLASH";
+  case TOKEN_TYPE_LPARENTESIS:  return "LPARENTESIS";
+  case TOKEN_TYPE_RPARENTESIS:  return "RPARENTESIS";
+  case TOKEN_TYPE_LBRACE:       return "LBRACE";
+  case TOKEN_TYPE_RBRACE:       return "RBRACE";
+
+  case TOKEN_TYPE_RETURN:       return "RETURN";
+  case TOKEN_TYPE_KW_INT:       return "KW_INT";
+  case TOKEN_TYPE_SEMICOLON:    return "SEMICOLON";
+
+  case TOKEN_TYPE_EOF:          return "EOF";
+  default:                      return "UNKNOWN";
+  }
+  // clang-format on
+}
+
+static void print_slice(str_slice_t slice) {
+  if (!slice.start || slice.size == 0) {
+    printf("<empty>");
+    return;
+  }
+
+  printf("\"%.*s\"", slice.size, slice.start);
+}
+
+void lexer_debug_print_tokens(lexer_t *ctx) {
+  if (!ctx || !ctx->tokens) {
+    printf("lexer_debug_print_tokens: <null lexer>\n");
+    return;
+  }
+
+  printf("==== LEXER TOKENS ====\n");
+
+  for (uint32_t i = 0; i <= ctx->last_token; ++i) {
+    token_t *tk = &ctx->tokens[i];
+
+    printf("[%03u] %-14s  ", i, token_type_to_string(tk->type));
+
+    print_slice(tk->data);
+
+    printf("  (line %u, col %u)\n", tk->pos.line, tk->pos.column);
+
+    if (tk->type == TOKEN_TYPE_EOF)
+      break;
+  }
+
+  printf("======================\n");
+}
