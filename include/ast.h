@@ -53,6 +53,8 @@ typedef struct {
 
 typedef struct {
   node_t *arena;
+  uint32_t arena_size;
+  uint32_t arena_reserved;
 
 } ast_t;
 
