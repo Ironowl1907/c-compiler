@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,6 +42,11 @@ void lexer_delete(lexer_t *ctx) {
   free(ctx->tokens);
   free(ctx->data);
   free(ctx);
+}
+
+token_t lexer_get_token(lexer_t *ctx, uint32_t index) {
+  assert(index < ctx->last_token);
+  return ctx->tokens[index];
 }
 
 static char peek(lexer_t *ctx) { return ctx->data[ctx->data_cursor]; }

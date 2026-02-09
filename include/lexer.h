@@ -53,6 +53,8 @@ void lexer_delete(lexer_t *ctx);
 
 int lexer_lex(lexer_t *ctx);
 
+token_t lexer_get_token(lexer_t *ctx, uint32_t index);
+
 void lexer_debug_print_tokens(lexer_t *ctx);
 
 #endif
