@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-ast_t *ast_create(lexer_t *lexer) {
+ast_t *ast_create(void) {
   ast_t *ast;
   ast = malloc(sizeof *ast);
   if (!ast) {

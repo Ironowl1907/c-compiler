@@ -58,7 +58,7 @@ typedef struct {
 
 } ast_t;
 
-ast_t *ast_create(lexer_t *lexer);
+ast_t *ast_create(void);
 void ast_destroy(ast_t *ctx);
 
 node_id ast_create_node(ast_t *ctx, node_t node);

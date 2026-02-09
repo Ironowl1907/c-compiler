@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 #endif
 
   // Create ast
-  ast_t *ast = ast_create(lexer);
+  ast_t *ast = ast_create();
 
   // Cleanup
   lexer_delete(lexer);
