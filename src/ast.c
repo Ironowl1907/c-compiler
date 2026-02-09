@@ -27,7 +27,7 @@ void ast_destroy(ast_t *ctx) {
 node_id ast_create_node(ast_t *ctx, node_t node) {
   if (ctx->arena_size == ctx->arena_reserved || ctx->arena == NULL) {
     ctx->arena_reserved = ctx->arena_reserved ? ctx->arena_reserved * 2 : 8;
-    ctx->arena = realloc(ctx->arena, ctx->arena_reserved);
+    ctx->arena = realloc(ctx->arena, ctx->arena_reserved * sizeof *ctx->arena);
     if (!ctx->arena) {
       perror("Error allocating memory");
       return 0;

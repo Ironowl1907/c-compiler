@@ -1,4 +1,6 @@
+#include "ast.h"
 #include "lexer.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -35,7 +37,12 @@ int main(int argc, char *argv[]) {
 
   lexer_lex(lexer);
 
-	lexer_debug_print_tokens(lexer);
+#ifndef NDEBUG
+  lexer_debug_print_tokens(lexer);
+#endif
+
+  // Create ast
+  ast_t *ast = ast_create(lexer);
 
   // Cleanup
   lexer_delete(lexer);

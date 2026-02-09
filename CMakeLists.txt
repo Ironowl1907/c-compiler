@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.10)
 project(c-compiler LANGUAGES C)
 
 set(SOURCES 
-    src/main.c
-    src/lexer.c
+   ./src/main.c
+   ./src/lexer.c
+		./src/ast.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
