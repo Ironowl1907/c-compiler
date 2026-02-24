@@ -27,7 +27,6 @@ typedef enum {
   NODE_FUNCTION,
 } node_type_e;
 
-
 typedef enum {
   OP_ADD,
   OP_SUB,
@@ -44,7 +43,6 @@ typedef enum {
   TYPE_INT,
   TYPE_VOID,
 } value_type_e;
-
 
 typedef struct {
   operation_e op;
@@ -178,5 +176,42 @@ ast_t *ast_create(void);
 void ast_destroy(ast_t *ast);
 
 node_id ast_create_node(ast_t *ast, node_t node);
+
+// ===============================================
+// =============== Constructors ===================
+// ===============================================
+
+node_id ast_make_binary_expr(ast_t *ast, operation_e op, node_id left,
+                             node_id right);
+
+node_id ast_make_unary_expr(ast_t *ast, operation_e op, node_id operand);
+
+node_id ast_make_literal_expr(ast_t *ast, int32_t value);
+
+node_id ast_make_identifier_expr(ast_t *ast, str_slice_t name);
+
+node_id ast_make_assign_expr(ast_t *ast, node_id target, node_id value);
+
+node_id ast_make_call_expr(ast_t *ast, node_id callee, node_id *args,
+                           uint32_t arg_count);
+
+node_id ast_make_expr_stmt(ast_t *ast, node_id expression);
+
+node_id ast_make_var_decl_stmt(ast_t *ast, value_type_e type, str_slice_t name,
+                               node_id initializer);
+
+node_id ast_make_block_stmt(ast_t *ast, node_id *statements,
+                            uint32_t stmt_count);
+
+node_id ast_make_if_stmt(ast_t *ast, node_id condition, node_id then_branch,
+                         node_id else_branch);
+
+node_id ast_make_while_stmt(ast_t *ast, node_id condition, node_id body);
+
+node_id ast_make_return_stmt(ast_t *ast, node_id expression);
+
+node_id ast_make_function(ast_t *ast, value_type_e return_type,
+                          str_slice_t name, node_id *params,
+                          uint32_t param_count, node_id body);
 
 #endif
