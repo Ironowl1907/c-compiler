@@ -2,14 +2,66 @@
 #include "ast.h"
 #include "lexer.h"
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+// ===============================================
+// ============ Static Declarations ===============
+// ===============================================
 
 static token_t consume(parser_t *ctx);
 static token_t peek(parser_t *ctx);
+static void parser_error(parser_t *ctx, const char *message);
 static void expect_token(parser_t *ctx, token_type_e expected_type);
+static void expect_token_consume(parser_t *ctx, token_type_e expected_type);
 
 static const char *token_type_2_str(token_type_e type);
+
+static node_id parse_primary(parser_t *ctx);
+
+static node_id parse_primary(parser_t *ctx) {
+  token_t tk = peek(ctx);
+
+  switch (tk.type) {
+  case TOKEN_TYPE_INT_LITERAL: {
+    consume(ctx);
+
+    char buffer[32];
+
+    if (tk.data.size >= sizeof(buffer))
+      parser_error(ctx, "Integer literal too large");
+
+    memcpy(buffer, tk.data.start, tk.data.size);
+    buffer[tk.data.size] = '\0';
+
+    int32_t value = (int32_t)strtol(buffer, NULL, 10);
+
+    return ast_make_literal_expr(ctx->ast, value);
+  }
+
+  case TOKEN_TYPE_IDENTIFIER: {
+    consume(ctx);
+
+    return ast_make_identifier_expr(ctx->ast, tk.data);
+  }
+
+  case TOKEN_TYPE_LPARENTESIS: {
+    consume(ctx); // eat '('
+
+    node_id expr = parse_expression(ctx);
+
+    expect_token_consume(ctx, TOKEN_TYPE_RPARENTESIS);
+
+    return expr;
+  }
+
+  default:
+    parser_error(ctx, "Expected primary expression");
+    return 0;
+  }
+}
 
 parser_t *parser_create(ast_t *ast, lexer_t *lexer) {
   assert(ast);
@@ -55,6 +107,11 @@ static void expect_token(parser_t *ctx, token_type_e expected_type) {
   }
 }
 
+static void expect_token_consume(parser_t *ctx, token_type_e expected_type) {
+  expect_token(ctx, expected_type);
+  consume(ctx);
+}
+
 static const char *token_type_2_str(token_type_e type) {
   switch (type) {
   case TOKEN_TYPE_IDENTIFIER:
@@ -89,4 +146,9 @@ static const char *token_type_2_str(token_type_e type) {
     break;
   }
   return "<UNDEFINED ENUM>";
+}
+
+static void parser_error(parser_t *ctx, const char *message) {
+  printf("%s, at: %d, %d ", message, peek(ctx).pos.column, peek(ctx).pos.line);
+  exit(1);
 }
