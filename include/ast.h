@@ -1,66 +1,182 @@
 #ifndef AST_H
 #define AST_H
 
-#include "lexer.h"
 #include "str_slice.h"
 #include <stdint.h>
+
 typedef uint32_t node_id;
 
 typedef enum {
-  NODE_TYPE_BINARY,
-  NODE_TYPE_URINARY,
-  NODE_TYPE_IDENTIFIER,
-  NODE_TYPE_LITTERAL,
-  NODE_TYPE_ASSIGMENT,
-  // TODO: ADD REMAINING NODES
+  // ---- Expressions ----
+  NODE_BINARY_EXPR,
+  NODE_UNARY_EXPR,
+  NODE_LITERAL_EXPR,
+  NODE_IDENTIFIER_EXPR,
+  NODE_ASSIGN_EXPR,
+  NODE_CALL_EXPR,
+
+  // ---- Statements ----
+  NODE_EXPR_STMT,
+  NODE_VAR_DECL_STMT,
+  NODE_BLOCK_STMT,
+  NODE_IF_STMT,
+  NODE_WHILE_STMT,
+  NODE_RETURN_STMT,
+
+  // ---- Top Level ----
+  NODE_FUNCTION,
 } node_type_e;
 
+
 typedef enum {
-  OPP_SUM,
-  OPP_RES,
-  OPP_MUL,
-  OPP_DIV,
-  OPP_NEG,
-} opperation_e;
+  OP_ADD,
+  OP_SUB,
+  OP_MUL,
+  OP_DIV,
+  OP_NEG,
+  OP_EQUAL,
+  OP_NOT_EQUAL,
+  OP_LESS,
+  OP_GREATER,
+} operation_e;
 
-typedef enum { TYPE_INT } ident_type_e;
+typedef enum {
+  TYPE_INT,
+  TYPE_VOID,
+} value_type_e;
 
-typedef struct {
-  opperation_e opp;
-  node_id l, r;
-} node_binary;
-
-typedef struct {
-  opperation_e opp;
-  node_id node;
-} node_urinary;
 
 typedef struct {
-  ident_type_e type;
+  operation_e op;
+  node_id left;
+  node_id right;
+} binary_expr_t;
+
+typedef struct {
+  operation_e op;
+  node_id operand;
+} unary_expr_t;
+
+typedef struct {
+  int32_t value;
+} literal_expr_t;
+
+typedef struct {
+  str_slice_t name;
+} identifier_expr_t;
+
+typedef struct {
+  node_id target; // identifier
+  node_id value;  // expression
+} assign_expr_t;
+
+typedef struct {
+  node_id callee;
+  node_id *args;
+  uint32_t arg_count;
+} call_expr_t;
+
+//
+// ============================================================
+// ===================== STATEMENTS ============================
+// ============================================================
+//
+
+typedef struct {
+  node_id expression;
+} expr_stmt_t;
+
+typedef struct {
+  value_type_e type;
+  str_slice_t name;
+  node_id initializer; // 0 if none
+} var_decl_stmt_t;
+
+typedef struct {
+  node_id *statements;
+  uint32_t stmt_count;
+} block_stmt_t;
+
+typedef struct {
+  node_id condition;
+  node_id then_branch;
+  node_id else_branch; // 0 if none
+} if_stmt_t;
+
+typedef struct {
+  node_id condition;
+  node_id body;
+} while_stmt_t;
+
+typedef struct {
+  node_id expression; // 0 if `return;`
+} return_stmt_t;
+
+//
+// ============================================================
+// ===================== FUNCTION ==============================
+// ============================================================
+//
+
+typedef struct {
+  value_type_e return_type;
   str_slice_t name;
 
-} node_identifier;
+  node_id *params; // var_decl_stmt_t nodes
+  uint32_t param_count;
+
+  node_id body; // block_stmt_t
+} function_t;
+
+//
+// ============================================================
+// ===================== GENERIC NODE ==========================
+// ============================================================
+//
 
 typedef struct {
   node_type_e type;
+
   union {
-    int32_t literal;
-    node_binary binary;
-    node_urinary urinary;
-    node_identifier identifier;
+
+    // Expressions
+    binary_expr_t binary_expr;
+    unary_expr_t unary_expr;
+    literal_expr_t literal_expr;
+    identifier_expr_t identifier_expr;
+    assign_expr_t assign_expr;
+    call_expr_t call_expr;
+
+    // Statements
+    expr_stmt_t expr_stmt;
+    var_decl_stmt_t var_decl_stmt;
+    block_stmt_t block_stmt;
+    if_stmt_t if_stmt;
+    while_stmt_t while_stmt;
+    return_stmt_t return_stmt;
+
+    // Top level
+    function_t function;
+
   } as;
+
 } node_t;
 
-typedef struct {
-  node_t *arena;
-  uint32_t arena_size;
-  uint32_t arena_reserved;
+//
+// ============================================================
+// ===================== AST ARENA =============================
+// ============================================================
+//
 
+typedef struct {
+  node_t *nodes;
+  uint32_t size;
+  uint32_t capacity;
 } ast_t;
 
 ast_t *ast_create(void);
-void ast_destroy(ast_t *ctx);
+void ast_destroy(ast_t *ast);
 
-node_id ast_create_node(ast_t *ctx, node_t node);
+node_id ast_create_node(ast_t *ast, node_t node);
 
 #endif
