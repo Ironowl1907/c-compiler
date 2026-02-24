@@ -8,10 +8,8 @@
 static token_t consume(parser_t *ctx);
 static token_t peek(parser_t *ctx);
 static void expect_token(parser_t *ctx, token_type_e expected_type);
-static const char *token_type_2_str(token_type_e type);
 
-static node_id parse_return(parser_t *ctx);
-static node_id parse_expresion(parser_t *ctx);
+static const char *token_type_2_str(token_type_e type);
 
 parser_t *parser_create(ast_t *ast, lexer_t *lexer) {
   assert(ast);
@@ -57,20 +55,6 @@ static void expect_token(parser_t *ctx, token_type_e expected_type) {
   }
 }
 
-static node_id parse_return(parser_t *ctx) {
-  // Return statements are formed as the following:
-  // return <expresion>;
-  consume(ctx); // Consume 'return'
-
-  node_id expresion = parse_expresion(ctx);
-
-  expect_token(ctx, TOKEN_TYPE_SEMICOLON);
-	consume(ctx);
-	return ast_create_node(ctx->ast, (node_t) {.type=nodetype})
-}
-
-static node_id parse_expresion(parser_t *ctx) {}
-
 static const char *token_type_2_str(token_type_e type) {
   switch (type) {
   case TOKEN_TYPE_IDENTIFIER:
@@ -100,5 +84,9 @@ static const char *token_type_2_str(token_type_e type) {
   case TOKEN_TYPE_EOF:
     return "EOF";
     break;
+  case TOKEN_TYPE_KW_INT:
+    return "INT";
+    break;
   }
+  return "<UNDEFINED ENUM>";
 }
