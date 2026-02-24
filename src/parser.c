@@ -7,12 +7,11 @@
 
 static token_t consume(parser_t *ctx);
 static token_t peek(parser_t *ctx);
+static void expect_token(parser_t *ctx, token_type_e expected_type);
+static const char *token_type_2_str(token_type_e type);
 
-static node_id parse_identifier(parser_t *ctx);
-static node_id parse_litteral(parser_t *ctx);
 static node_id parse_return(parser_t *ctx);
-static node_id parse_if(parser_t *ctx);
-static node_id parse_function_declaration(parser_t *ctx);
+static node_id parse_expresion(parser_t *ctx);
 
 parser_t *parser_create(ast_t *ast, lexer_t *lexer) {
   assert(ast);
@@ -47,15 +46,59 @@ static token_t peek(parser_t *ctx) {
   return lexer_get_token(ctx->lexer, ctx->cursor);
 }
 
-static node_id parse_function_declaration(parser_t *ctx) {
+static void expect_token(parser_t *ctx, token_type_e expected_type) {
+  token_t token = peek(ctx);
+  if (token.type != expected_type) {
+    printf("[Parsed Error]: Expected %s in position %d, %d. Instead %s",
+           token_type_2_str(expected_type), token.pos.column, token.pos.line,
+           token_type_2_str(token.type));
 
+    exit(1);
+  }
 }
 
-static node_id parse_identifier(parser_t *ctx) {
-  return ast_create_node(ctx->ast,
-                         (node_t){.type = NODE_TYPE_IDENTIFIER,
-                                  .as.identifier.type = TYPE_INT,
-                                  .as.identifier.name = consume(ctx).data});
+static node_id parse_return(parser_t *ctx) {
+  // Return statements are formed as the following:
+  // return <expresion>;
+  consume(ctx); // Consume 'return'
+
+  node_id expresion = parse_expresion(ctx);
+
+  expect_token(ctx, TOKEN_TYPE_SEMICOLON);
+	consume(ctx);
+	return ast_create_node(ctx->ast, (node_t) {.type=nodetype})
 }
 
-int parser_parse(void) {}
+static node_id parse_expresion(parser_t *ctx) {}
+
+static const char *token_type_2_str(token_type_e type) {
+  switch (type) {
+  case TOKEN_TYPE_IDENTIFIER:
+    return "IDENTIFIER";
+  case TOKEN_TYPE_INT_LITERAL:
+    return "INT_LITERAL";
+  case TOKEN_TYPE_PLUS:
+    return "+";
+  case TOKEN_TYPE_MINUS:
+    return "-";
+  case TOKEN_TYPE_STAR:
+    return "*";
+  case TOKEN_TYPE_FSLASH:
+    return "/";
+  case TOKEN_TYPE_LPARENTESIS:
+    return "(";
+  case TOKEN_TYPE_RPARENTESIS:
+    return ")";
+  case TOKEN_TYPE_LBRACE:
+    return "{";
+  case TOKEN_TYPE_RBRACE:
+    return "}";
+  case TOKEN_TYPE_RETURN:
+    return "RETURN";
+  case TOKEN_TYPE_SEMICOLON:
+    return ";";
+  case TOKEN_TYPE_EOF:
+    return "EOF";
+    break;
+  }
+}
