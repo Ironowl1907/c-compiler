@@ -5,6 +5,7 @@ set(SOURCES
    ./src/main.c
    ./src/lexer.c
    ./src/ast.c
+   ./src/parser.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

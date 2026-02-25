@@ -1,5 +1,6 @@
 #include "ast.h"
 #include "lexer.h"
+#include "parser.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,6 +44,10 @@ int main(int argc, char *argv[]) {
 
   // Create ast
   ast_t *ast = ast_create();
+
+  // Craete parser
+  parser_t *parser = parser_create(ast, lexer);
+  parser_parse(parser);
 
   // Cleanup
   lexer_delete(lexer);

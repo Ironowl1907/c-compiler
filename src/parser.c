@@ -13,13 +13,20 @@
 
 static token_t consume(parser_t *ctx);
 static token_t peek(parser_t *ctx);
+static const char *token_type_2_str(token_type_e type);
+static inline uint32_t binding_power(token_type_e type);
+
 static void parser_error(parser_t *ctx, const char *message);
 static void expect_token(parser_t *ctx, token_type_e expected_type);
 static void expect_token_consume(parser_t *ctx, token_type_e expected_type);
 
-static const char *token_type_2_str(token_type_e type);
-
 static node_id parse_primary(parser_t *ctx);
+static node_id parse_expresion(parser_t *ctx, uint32_t min_bp);
+
+int parser_parse(parser_t *ctx) {
+  parse_expresion(ctx, 0);
+  return 0;
+}
 
 static node_id parse_primary(parser_t *ctx) {
   token_t tk = peek(ctx);
@@ -50,7 +57,7 @@ static node_id parse_primary(parser_t *ctx) {
   case TOKEN_TYPE_LPARENTESIS: {
     consume(ctx); // eat '('
 
-    node_id expr = parse_expression(ctx);
+    node_id expr = parse_expresion(ctx, 0);
 
     expect_token_consume(ctx, TOKEN_TYPE_RPARENTESIS);
 
@@ -61,6 +68,37 @@ static node_id parse_primary(parser_t *ctx) {
     parser_error(ctx, "Expected primary expression");
     return 0;
   }
+}
+
+static node_id parse_expresion(parser_t *ctx, uint32_t min_bp) {
+  token_t tok = peek(ctx);
+  node_id lhs = parse_primary(ctx);
+
+  while (binding_power(peek(ctx).type) > min_bp) {
+    token_t op = consume(ctx);
+    int bp = binding_power(op.type);
+
+    node_id rhs = parse_expresion(ctx, bp);
+
+    switch (op.type) {
+    case TOKEN_TYPE_PLUS:
+      lhs = ast_make_binary_expr(ctx->ast, OP_ADD, lhs, rhs);
+      break;
+    case TOKEN_TYPE_MINUS:
+      lhs = ast_make_binary_expr(ctx->ast, OP_LESS, lhs, rhs);
+      break;
+    case TOKEN_TYPE_STAR:
+      lhs = ast_make_binary_expr(ctx->ast, OP_MUL, lhs, rhs);
+      break;
+    case TOKEN_TYPE_FSLASH:
+      lhs = ast_make_binary_expr(ctx->ast, OP_DIV, lhs, rhs);
+      break;
+    default:
+      printf("[Parser Error]: Unexpected token at %d, %d\n", tok.pos.column,
+             tok.pos.line);
+    }
+  }
+  return lhs;
 }
 
 parser_t *parser_create(ast_t *ast, lexer_t *lexer) {
@@ -99,7 +137,7 @@ static token_t peek(parser_t *ctx) {
 static void expect_token(parser_t *ctx, token_type_e expected_type) {
   token_t token = peek(ctx);
   if (token.type != expected_type) {
-    printf("[Parsed Error]: Expected %s in position %d, %d. Instead %s",
+    printf("[Parsed Error]: Expected %s in position %d, %d. Instead %s\n",
            token_type_2_str(expected_type), token.pos.column, token.pos.line,
            token_type_2_str(token.type));
 
@@ -149,6 +187,29 @@ static const char *token_type_2_str(token_type_e type) {
 }
 
 static void parser_error(parser_t *ctx, const char *message) {
-  printf("%s, at: %d, %d ", message, peek(ctx).pos.column, peek(ctx).pos.line);
+  printf("%s, at: %d, %d\n", message, peek(ctx).pos.line, peek(ctx).pos.column);
   exit(1);
+}
+
+static inline uint32_t binding_power(token_type_e type) {
+  switch (type) {
+  case TOKEN_TYPE_INT_LITERAL:
+    return 1;
+  case TOKEN_TYPE_IDENTIFIER:
+    return 1;
+  case TOKEN_TYPE_PLUS:
+    return 2;
+  case TOKEN_TYPE_MINUS:
+    return 2;
+  case TOKEN_TYPE_STAR:
+    return 3;
+  case TOKEN_TYPE_FSLASH:
+    return 3;
+  case TOKEN_TYPE_EOF:
+    return 0;
+  default:
+    printf("[Parser Error]: No binding power for %s\n", token_type_2_str(type));
+    exit(1);
+  }
+  return 0;
 }
