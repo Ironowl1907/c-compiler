@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
 
   lexer_lex(lexer);
 
+  // Debug print for lexer output if debug build
 #ifndef NDEBUG
   lexer_debug_print_tokens(lexer);
 #endif
@@ -49,8 +50,10 @@ int main(int argc, char *argv[]) {
   parser_t *parser = parser_create(ast, lexer);
   parser_parse(parser);
 
-	// Debug print for ast
-	ast_debug_print(ast);
+  // Debug print for ast if debug build
+#ifndef NDEBUG
+  ast_debug_print(ast);
+#endif
 
   // Cleanup
   lexer_delete(lexer);
