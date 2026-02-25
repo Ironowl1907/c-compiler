@@ -49,6 +49,9 @@ int main(int argc, char *argv[]) {
   parser_t *parser = parser_create(ast, lexer);
   parser_parse(parser);
 
+	// Debug print for ast
+	ast_debug_print(ast);
+
   // Cleanup
   lexer_delete(lexer);
 

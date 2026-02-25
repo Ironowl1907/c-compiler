@@ -5,6 +5,7 @@ set(SOURCES
    ./src/main.c
    ./src/lexer.c
    ./src/ast.c
+   ./src/ast_debug.c
    ./src/parser.c
 )
 

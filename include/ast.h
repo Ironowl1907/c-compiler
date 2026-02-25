@@ -214,4 +214,10 @@ node_id ast_make_function(ast_t *ast, value_type_e return_type,
                           str_slice_t name, node_id *params,
                           uint32_t param_count, node_id body);
 
+// ==================================================
+// =================== Debug =========================
+// ==================================================
+
+void ast_debug_print(ast_t *ast);
+
 #endif
