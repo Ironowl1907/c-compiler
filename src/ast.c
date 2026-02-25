@@ -1,4 +1,5 @@
 #include "ast.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -162,4 +163,13 @@ node_id ast_make_function(ast_t *ast, value_type_e return_type,
   node.as.function.body = body;
 
   return ast_create_node(ast, node);
+}
+
+void program_append_statement(program_t *program, node_id statement) {
+  assert(program && program->statements);
+  if (program->size == program->reserved) {
+    program->reserved *= 2;
+    program->statements = realloc(program->statements, program->reserved);
+  }
+  program->statements[program->size++] = statement;
 }

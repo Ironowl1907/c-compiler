@@ -18,14 +18,26 @@ static inline uint32_t binding_power(token_type_e type);
 
 static void parser_error(parser_t *ctx, const char *message);
 static void expect_token(parser_t *ctx, token_type_e expected_type);
-static void expect_token_consume(parser_t *ctx, token_type_e expected_type);
+static token_t expect_token_consume(parser_t *ctx, token_type_e expected_type);
 
 static node_id parse_primary(parser_t *ctx);
 static node_id parse_expresion(parser_t *ctx, uint32_t min_bp);
 
-int parser_parse(parser_t *ctx) {
-  parse_expresion(ctx, 0);
-  return 0;
+program_t parser_parse(parser_t *ctx) {
+  program_t program;
+  program.size = 0;
+  program.reserved = 8;
+  program.statements = malloc(sizeof program.statements * program.reserved);
+
+  while (peek(ctx).type != TOKEN_TYPE_EOF) {
+    // TODO: Global funciton and variable parsing
+    // For now only expresion parsing
+    node_id statement;
+    statement = parse_expresion(ctx, 0);
+
+    program_append_statement(&program, statement);
+  }
+	return program;
 }
 
 static node_id parse_primary(parser_t *ctx) {
@@ -145,9 +157,9 @@ static void expect_token(parser_t *ctx, token_type_e expected_type) {
   }
 }
 
-static void expect_token_consume(parser_t *ctx, token_type_e expected_type) {
+static token_t expect_token_consume(parser_t *ctx, token_type_e expected_type) {
   expect_token(ctx, expected_type);
-  consume(ctx);
+  return consume(ctx);
 }
 
 static const char *token_type_2_str(token_type_e type) {

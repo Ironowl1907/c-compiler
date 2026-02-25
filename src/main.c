@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 
   // Craete parser
   parser_t *parser = parser_create(ast, lexer);
-  parser_parse(parser);
+  program_t program = parser_parse(parser);
 
   // Debug print for ast if debug build
 #ifndef NDEBUG
