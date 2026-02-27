@@ -21,7 +21,10 @@ static void expect_token(parser_t *ctx, token_type_e expected_type);
 static token_t expect_token_consume(parser_t *ctx, token_type_e expected_type);
 
 static node_id parse_primary(parser_t *ctx);
-static node_id parse_expresion(parser_t *ctx, uint32_t min_bp);
+static node_id parse_expression(parser_t *ctx, uint32_t min_bp);
+static node_id parse_function(parser_t *ctx, token_t type, token_t name);
+static node_id parse_block(parser_t *ctx);
+static node_id parse_statement(parser_t *ctx);
 
 program_t parser_parse(parser_t *ctx) {
   program_t program;
@@ -35,16 +38,63 @@ program_t parser_parse(parser_t *ctx) {
     token_t identifier = expect_token_consume(ctx, TOKEN_TYPE_IDENTIFIER);
 
     if (peek(ctx).type == TOKEN_TYPE_LPARENTESIS) {
-      // It is a function declaration
+      node_id fn = parse_function(ctx, type, identifier);
+      program_append_statement(&program, fn);
     } else {
       // A global varialbe declaration
       // Lets error this for now
       assert(0 && "Unimplemented global variable declaration");
     }
-
-    // program_append_statement(&program, statement);
   }
   return program;
+}
+
+static node_id parse_function(parser_t *ctx, token_t type, token_t name) {
+  // Here we assume that we already have eaten the return type and identifier
+  // So we start with '('
+
+  // TODO: Parse funcion args
+  consume(ctx); // '('
+  consume(ctx); // ')'
+
+  // Parser block of statements
+  node_id body = parse_block(ctx);
+
+  // FIX: CRITIAL BUG USING WRONG ENUMERATION
+  return ast_make_function(ctx->ast, type.type, name.data, 0, 0, body);
+}
+
+static node_id parse_block(parser_t *ctx) {
+  expect_token_consume(ctx, TOKEN_TYPE_LBRACE);
+
+  uint32_t reserved = 2;
+  node_id *statements = malloc(sizeof *statements * reserved);
+  uint32_t size = 0;
+
+  while (peek(ctx).type != TOKEN_TYPE_RBRACE &&
+         peek(ctx).type != TOKEN_TYPE_EOF) {
+    if (size == reserved) {
+      reserved *= 2;
+      statements = realloc(statements, reserved * sizeof *statements);
+    }
+    statements[size++] = parse_statement(ctx);
+  }
+  expect_token_consume(ctx, TOKEN_TYPE_RBRACE);
+
+  return ast_make_block_stmt(ctx->ast, statements, size);
+}
+
+static node_id parse_statement(parser_t *ctx) {
+  switch (peek(ctx).type) {
+  case TOKEN_TYPE_RETURN:
+    consume(ctx);
+    node_id expr = parse_expression(ctx, 0);
+    expect_token_consume(ctx, TOKEN_TYPE_SEMICOLON);
+    return ast_make_return_stmt(ctx->ast, expr);
+  default:
+    assert(0 && "Unimplemented");
+    break;
+  }
 }
 
 static node_id parse_primary(parser_t *ctx) {
@@ -76,7 +126,7 @@ static node_id parse_primary(parser_t *ctx) {
   case TOKEN_TYPE_LPARENTESIS: {
     consume(ctx); // eat '('
 
-    node_id expr = parse_expresion(ctx, 0);
+    node_id expr = parse_expression(ctx, 0);
 
     expect_token_consume(ctx, TOKEN_TYPE_RPARENTESIS);
 
@@ -89,7 +139,7 @@ static node_id parse_primary(parser_t *ctx) {
   }
 }
 
-static node_id parse_expresion(parser_t *ctx, uint32_t min_bp) {
+static node_id parse_expression(parser_t *ctx, uint32_t min_bp) {
   node_id lhs = parse_primary(ctx);
 
   while (1) {
@@ -101,7 +151,7 @@ static node_id parse_expresion(parser_t *ctx, uint32_t min_bp) {
 
     consume(ctx);
 
-    node_id rhs = parse_expresion(ctx, bp + 1); // Plus 1 to left associativity
+    node_id rhs = parse_expression(ctx, bp + 1); // Plus 1 to left associativity
 
     switch (op.type) {
     case TOKEN_TYPE_PLUS:
@@ -217,18 +267,21 @@ static void parser_error(parser_t *ctx, const char *message) {
 static inline uint32_t binding_power(token_type_e type) {
   switch (type) {
   case TOKEN_TYPE_PLUS:
-    return 2;
   case TOKEN_TYPE_MINUS:
     return 2;
+
   case TOKEN_TYPE_STAR:
-    return 3;
   case TOKEN_TYPE_FSLASH:
     return 3;
+
+  // Tokens that terminate expressions
+  case TOKEN_TYPE_SEMICOLON:
+  case TOKEN_TYPE_RPARENTESIS:
+  case TOKEN_TYPE_RBRACE:
   case TOKEN_TYPE_EOF:
     return 0;
+
   default:
-    printf("[Parser Error]: No binding power for %s\n", token_type_2_str(type));
-    exit(1);
+    return 0;
   }
-  return 0;
 }
