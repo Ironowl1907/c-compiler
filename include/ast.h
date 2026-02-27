@@ -136,7 +136,6 @@ typedef struct {
   node_type_e type;
 
   union {
-
     // Expressions
     binary_expr_t binary_expr;
     unary_expr_t unary_expr;
@@ -155,7 +154,6 @@ typedef struct {
 
     // Top level
     function_t function;
-
   } as;
 
 } node_t;

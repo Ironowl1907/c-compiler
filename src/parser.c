@@ -30,14 +30,21 @@ program_t parser_parse(parser_t *ctx) {
   program.statements = malloc(sizeof program.statements * program.reserved);
 
   while (peek(ctx).type != TOKEN_TYPE_EOF) {
-    // TODO: Global funciton and variable parsing
-    // For now only expresion parsing
-    node_id statement;
-    statement = parse_expresion(ctx, 0);
+    // TODO: Allow more types
+    token_t type = expect_token_consume(ctx, TOKEN_TYPE_KW_INT);
+    token_t identifier = expect_token_consume(ctx, TOKEN_TYPE_IDENTIFIER);
 
-    program_append_statement(&program, statement);
+    if (peek(ctx).type == TOKEN_TYPE_LPARENTESIS) {
+      // It is a function declaration
+    } else {
+      // A global varialbe declaration
+      // Lets error this for now
+      assert(0 && "Unimplemented global variable declaration");
+    }
+
+    // program_append_statement(&program, statement);
   }
-	return program;
+  return program;
 }
 
 static node_id parse_primary(parser_t *ctx) {
@@ -83,21 +90,25 @@ static node_id parse_primary(parser_t *ctx) {
 }
 
 static node_id parse_expresion(parser_t *ctx, uint32_t min_bp) {
-  token_t tok = peek(ctx);
   node_id lhs = parse_primary(ctx);
 
-  while (binding_power(peek(ctx).type) > min_bp) {
-    token_t op = consume(ctx);
-    int bp = binding_power(op.type);
+  while (1) {
+    token_t op = peek(ctx);
+    uint32_t bp = binding_power(op.type);
 
-    node_id rhs = parse_expresion(ctx, bp);
+    if (bp <= min_bp)
+      break;
+
+    consume(ctx);
+
+    node_id rhs = parse_expresion(ctx, bp + 1); // Plus 1 to left associativity
 
     switch (op.type) {
     case TOKEN_TYPE_PLUS:
       lhs = ast_make_binary_expr(ctx->ast, OP_ADD, lhs, rhs);
       break;
     case TOKEN_TYPE_MINUS:
-      lhs = ast_make_binary_expr(ctx->ast, OP_LESS, lhs, rhs);
+      lhs = ast_make_binary_expr(ctx->ast, OP_SUB, lhs, rhs);
       break;
     case TOKEN_TYPE_STAR:
       lhs = ast_make_binary_expr(ctx->ast, OP_MUL, lhs, rhs);
@@ -106,8 +117,8 @@ static node_id parse_expresion(parser_t *ctx, uint32_t min_bp) {
       lhs = ast_make_binary_expr(ctx->ast, OP_DIV, lhs, rhs);
       break;
     default:
-      printf("[Parser Error]: Unexpected token at %d, %d\n", tok.pos.column,
-             tok.pos.line);
+      printf("[Parser Error]: Unexpected token at %d, %d\n", op.pos.column,
+             op.pos.line);
     }
   }
   return lhs;
@@ -205,10 +216,6 @@ static void parser_error(parser_t *ctx, const char *message) {
 
 static inline uint32_t binding_power(token_type_e type) {
   switch (type) {
-  case TOKEN_TYPE_INT_LITERAL:
-    return 1;
-  case TOKEN_TYPE_IDENTIFIER:
-    return 1;
   case TOKEN_TYPE_PLUS:
     return 2;
   case TOKEN_TYPE_MINUS:
