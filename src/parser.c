@@ -268,11 +268,11 @@ static inline uint32_t binding_power(token_type_e type) {
   switch (type) {
   case TOKEN_TYPE_PLUS:
   case TOKEN_TYPE_MINUS:
-    return 2;
+    return 20;
 
   case TOKEN_TYPE_STAR:
   case TOKEN_TYPE_FSLASH:
-    return 3;
+    return 30;
 
   // Tokens that terminate expressions
   case TOKEN_TYPE_SEMICOLON:

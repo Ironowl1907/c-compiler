@@ -256,6 +256,7 @@ void ast_debug_print(ast_t *ast) {
   printf("==== AST DEBUG PRINT ====\n");
 
   for (uint32_t i = 1; i < ast->size; ++i) {
+    printf("=========== %d =============\n", i);
     ast_debug_print_node(ast, i, 0);
   }
 
