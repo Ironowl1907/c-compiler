@@ -12,7 +12,7 @@ ast_t *ast_create(void) {
   }
   ast->nodes = NULL;
   ast->capacity = 0;
-  ast->size = 0;
+  ast->size = 1;
 
   return ast;
 }

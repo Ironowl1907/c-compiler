@@ -67,6 +67,7 @@ static node_id parse_function(parser_t *ctx, token_t type, token_t name) {
 static node_id parse_block(parser_t *ctx) {
   expect_token_consume(ctx, TOKEN_TYPE_LBRACE);
 
+  // HACK: Should be a zero allocation parser
   uint32_t reserved = 2;
   node_id *statements = malloc(sizeof *statements * reserved);
   uint32_t size = 0;
