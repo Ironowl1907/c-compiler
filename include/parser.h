@@ -15,6 +15,6 @@ typedef struct {
 parser_t *parser_create(ast_t *ast, lexer_t *lexer);
 void parser_destroy(parser_t *ctx);
 
-program_t parser_parse(parser_t *ctx);
+node_id parser_parse(parser_t *ctx);
 
 #endif

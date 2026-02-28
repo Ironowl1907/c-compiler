@@ -1,4 +1,5 @@
 #include "ast.h"
+#include <stdint.h>
 #include <stdio.h>
 
 // ============================================================
@@ -32,11 +33,11 @@ static const char *node_type_to_string(node_type_e type) {
     return "WHILE_STMT";
   case NODE_RETURN_STMT:
     return "RETURN_STMT";
-
   case NODE_FUNCTION:
     return "FUNCTION";
+  case NODE_PROGRAM:
+    return "PROGRAM";
   }
-
   return "UNKNOWN";
 }
 
@@ -240,6 +241,23 @@ static void ast_debug_print_node(ast_t *ast, node_id id, int indent) {
     print_indent(indent + 1);
     printf("body:\n");
     ast_debug_print_node(ast, node->as.function.body, indent + 2);
+    break;
+  }
+
+  case NODE_PROGRAM: {
+    print_indent(indent + 1);
+    printf("size: %d\n", node->as.program.size);
+
+    print_indent(indent + 1);
+    printf("reserved: %d\n", node->as.program.reserved);
+
+    print_indent(indent + 1);
+    printf("statements: \n");
+
+    for (uint32_t i = 0; i < node->as.program.size; ++i) {
+      ast_debug_print_node(ast, node->as.program.statements[i], indent + 2);
+    }
+
     break;
   }
   }

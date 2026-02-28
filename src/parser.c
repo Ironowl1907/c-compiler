@@ -26,7 +26,7 @@ static node_id parse_function(parser_t *ctx, token_t type, token_t name);
 static node_id parse_block(parser_t *ctx);
 static node_id parse_statement(parser_t *ctx);
 
-program_t parser_parse(parser_t *ctx) {
+node_id parser_parse(parser_t *ctx) {
   program_t program;
   program.size = 0;
   program.reserved = 8;
@@ -46,7 +46,8 @@ program_t parser_parse(parser_t *ctx) {
       assert(0 && "Unimplemented global variable declaration");
     }
   }
-  return program;
+  return ast_make_program(ctx->ast, program.statements, program.size,
+                          program.reserved);
 }
 
 static node_id parse_function(parser_t *ctx, token_t type, token_t name) {

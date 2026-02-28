@@ -25,6 +25,7 @@ typedef enum {
 
   // ---- Top Level ----
   NODE_FUNCTION,
+	NODE_PROGRAM
 } node_type_e;
 
 typedef enum {
@@ -126,6 +127,16 @@ typedef struct {
   node_id body; // block_stmt_t
 } function_t;
 
+// ============================================================
+// ===================== Program ===============================
+// ============================================================
+
+typedef struct {
+  node_id *statements;
+  uint32_t size;
+  uint32_t reserved;
+} program_t;
+
 //
 // ============================================================
 // ===================== GENERIC NODE AND PROGRAM ==============
@@ -154,19 +165,10 @@ typedef struct {
 
     // Top level
     function_t function;
+    program_t program;
   } as;
 
 } node_t;
-
-// ============================================================
-// ===================== Program ===============================
-// ============================================================
-
-typedef struct {
-  node_id *statements;
-  uint32_t size;
-  uint32_t reserved;
-} program_t;
 
 void program_append_statement(program_t *program, node_id statement);
 
@@ -221,6 +223,9 @@ node_id ast_make_return_stmt(ast_t *ast, node_id expression);
 node_id ast_make_function(ast_t *ast, value_type_e return_type,
                           str_slice_t name, node_id *params,
                           uint32_t param_count, node_id body);
+
+node_id ast_make_program(ast_t *ast, node_id *statements, uint32_t size,
+                         uint32_t reserved);
 
 // ==================================================
 // =================== Debug =========================

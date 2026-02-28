@@ -173,3 +173,15 @@ void program_append_statement(program_t *program, node_id statement) {
   }
   program->statements[program->size++] = statement;
 }
+
+node_id ast_make_program(ast_t *ast, node_id *statements, uint32_t size,
+                         uint32_t reserved) {
+
+  node_t node = {0};
+  node.type = NODE_PROGRAM;
+  node.as.program.reserved = reserved;
+  node.as.program.size = size;
+  node.as.program.statements = statements;
+
+  return ast_create_node(ast, node);
+}
