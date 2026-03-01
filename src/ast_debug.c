@@ -72,6 +72,8 @@ static const char *type_to_string(value_type_e type) {
     return "int";
   case TYPE_VOID:
     return "void";
+  case TYPE_FLOAT:
+    return "float";
   }
   return "unknown";
 }

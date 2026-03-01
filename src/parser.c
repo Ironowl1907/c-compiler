@@ -22,9 +22,10 @@ static token_t expect_token_consume(parser_t *ctx, token_type_e expected_type);
 
 static node_id parse_primary(parser_t *ctx);
 static node_id parse_expression(parser_t *ctx, uint32_t min_bp);
-static node_id parse_function(parser_t *ctx, token_t type, token_t name);
+static node_id parse_function(parser_t *ctx, value_type_e type, token_t name);
 static node_id parse_block(parser_t *ctx);
 static node_id parse_statement(parser_t *ctx);
+static value_type_e parse_type(parser_t *ctx);
 
 node_id parser_parse(parser_t *ctx) {
   program_t program;
@@ -33,8 +34,7 @@ node_id parser_parse(parser_t *ctx) {
   program.statements = malloc(sizeof program.statements * program.reserved);
 
   while (peek(ctx).type != TOKEN_TYPE_EOF) {
-    // TODO: Allow more types
-    token_t type = expect_token_consume(ctx, TOKEN_TYPE_KW_INT);
+    value_type_e type = parse_type(ctx);
     token_t identifier = expect_token_consume(ctx, TOKEN_TYPE_IDENTIFIER);
 
     if (peek(ctx).type == TOKEN_TYPE_LPARENTESIS) {
@@ -50,7 +50,29 @@ node_id parser_parse(parser_t *ctx) {
                           program.reserved);
 }
 
-static node_id parse_function(parser_t *ctx, token_t type, token_t name) {
+static value_type_e parse_type(parser_t *ctx) {
+  token_t t = peek(ctx);
+
+  switch (t.type) {
+  case TOKEN_TYPE_KW_INT:
+    consume(ctx);
+    return TYPE_INT;
+
+  case TOKEN_TYPE_KW_FLOAT:
+    consume(ctx);
+    return TYPE_FLOAT;
+
+  case TOKEN_TYPE_KW_VOID:
+    consume(ctx);
+    return TYPE_VOID;
+
+  default:
+    parser_error(ctx, "Expected type");
+  }
+  return 0;
+}
+
+static node_id parse_function(parser_t *ctx, value_type_e type, token_t name) {
   // Here we assume that we already have eaten the return type and identifier
   // So we start with '('
 
@@ -62,7 +84,7 @@ static node_id parse_function(parser_t *ctx, token_t type, token_t name) {
   node_id body = parse_block(ctx);
 
   // FIX: CRITIAL BUG USING WRONG ENUMERATION
-  return ast_make_function(ctx->ast, type.type, name.data, 0, 0, body);
+  return ast_make_function(ctx->ast, type, name.data, 0, 0, body);
 }
 
 static node_id parse_block(parser_t *ctx) {
