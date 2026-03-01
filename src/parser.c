@@ -212,8 +212,8 @@ static token_t peek(parser_t *ctx) {
 static void expect_token(parser_t *ctx, token_type_e expected_type) {
   token_t token = peek(ctx);
   if (token.type != expected_type) {
-    printf("[Parsed Error]: Expected %s in position %d, %d. Instead %s\n",
-           token_type_2_str(expected_type), token.pos.column, token.pos.line,
+    printf("[Parsed Error]: Expected %s in position %d,%d. Instead %s\n",
+           token_type_2_str(expected_type), token.pos.line, token.pos.column,
            token_type_2_str(token.type));
 
     exit(1);
@@ -256,6 +256,10 @@ static const char *token_type_2_str(token_type_e type) {
     break;
   case TOKEN_TYPE_KW_INT:
     return "INT";
+  case TOKEN_TYPE_KW_FLOAT:
+    return "FLOAT";
+  case TOKEN_TYPE_KW_VOID:
+    return "VOID";
     break;
   }
   return "<UNDEFINED ENUM>";

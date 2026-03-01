@@ -25,7 +25,7 @@ typedef enum {
 
   // ---- Top Level ----
   NODE_FUNCTION,
-	NODE_PROGRAM
+  NODE_PROGRAM
 } node_type_e;
 
 typedef enum {
@@ -43,6 +43,7 @@ typedef enum {
 typedef enum {
   TYPE_INT,
   TYPE_VOID,
+  TYPE_FLOAT,
 } value_type_e;
 
 typedef struct {

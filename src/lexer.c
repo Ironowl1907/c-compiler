@@ -159,7 +159,11 @@ int lexer_lex(lexer_t *ctx) {
           append_token(ctx, TOKEN_TYPE_RETURN, start, size, start_pos);
         } else if (size == 3 && memcmp(start, "int", 3) == 0) {
           append_token(ctx, TOKEN_TYPE_KW_INT, start, size, start_pos);
-        } else {
+        } else if (size == 4 && memcmp(start, "void", 3) == 0) {
+          append_token(ctx, TOKEN_TYPE_KW_VOID, start, size, start_pos);
+        }else if (size == 5 && memcmp(start, "float", 3) == 0) {
+          append_token(ctx, TOKEN_TYPE_KW_VOID, start, size, start_pos);
+        }else {
           append_token(ctx, TOKEN_TYPE_IDENTIFIER, start, size, start_pos);
         }
 
@@ -195,6 +199,8 @@ static const char *token_type_to_string(token_type_e type) {
 
   case TOKEN_TYPE_RETURN:       return "RETURN";
   case TOKEN_TYPE_KW_INT:       return "KW_INT";
+  case TOKEN_TYPE_KW_VOID:       return "KW_VOID";
+  case TOKEN_TYPE_KW_FLOAT:       return "KW_FLOAT";
   case TOKEN_TYPE_SEMICOLON:    return "SEMICOLON";
 
   case TOKEN_TYPE_EOF:          return "EOF";
