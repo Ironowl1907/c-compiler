@@ -7,6 +7,7 @@ set(SOURCES
    ./src/ast.c
    ./src/ast_debug.c
    ./src/parser.c
+	 ./src/codegen.c
 )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -26,4 +27,5 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 include_directories(include)
+target_link_libraries(${PROJECT_NAME} -lLLVM-21)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
