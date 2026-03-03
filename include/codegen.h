@@ -39,10 +39,5 @@ LLVMBuilderRef codegen_get_builder(codegen_context_t *ctx);
 
 int codegen_verify_module(codegen_context_t *ctx);
 
-int codegen_emit_ir(codegen_context_t *ctx, const char *filepath);
-
-int codegen_emit_object(codegen_context_t *ctx, const char *filepath);
-
-int codegen_run_optimizations(codegen_context_t *ctx);
 
 #endif
