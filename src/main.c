@@ -1,4 +1,5 @@
 #include "ast.h"
+#include "codegen.h"
 #include "lexer.h"
 #include "parser.h"
 #include <stdint.h>
@@ -54,6 +55,13 @@ int main(int argc, char *argv[]) {
 #ifndef NDEBUG
   ast_debug_print(ast);
 #endif
+
+  // Code generation
+  codegen_error_t err;
+  codegen_context_t *codegen = codegen_create("ccodegeneration", &err);
+  if (err != CODEGEN_OK) {
+    printf("[Codegen Error]: Error on creation,err id: %d", err);
+  }
 
   // Cleanup
   lexer_delete(lexer);

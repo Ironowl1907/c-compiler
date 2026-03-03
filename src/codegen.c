@@ -10,14 +10,6 @@
 #include <llvm-c/TargetMachine.h>
 #include <llvm-c/Transforms/PassBuilder.h>
 
-struct codegen_context {
-  LLVMContextRef context;
-  LLVMModuleRef module;
-  LLVMBuilderRef builder;
-
-  LLVMTargetMachineRef target_machine;
-};
-
 static int initialize_llvm_targets(void) {
   if (LLVMInitializeNativeTarget() != 0)
     return 1;
@@ -48,6 +40,12 @@ codegen_context_t *codegen_create(const char *module_name,
   codegen_context_t *ctx = calloc(1, sizeof(*ctx));
   if (!ctx)
     return NULL;
+
+  if (LLVMInitializeNativeTarget() || LLVMInitializeNativeAsmPrinter() ||
+      LLVMInitializeNativeAsmParser()) {
+    *err = CODEGEN_ERROR_LLVM_INIT_FAILED;
+    return ctx;
+  }
 
   ctx->context = LLVMContextCreate();
   ctx->module = LLVMModuleCreateWithNameInContext(module_name, ctx->context);
@@ -159,8 +157,8 @@ int codegen_run_optimizations(codegen_context_t *ctx) {
    * - CFG simplification
    */
 
-	// FIX: Using undeclared functions
-	//
+  // FIX: Using undeclared functions
+  //
   // LLVMAddPromoteMemoryToRegisterPass(pass);
   // LLVMAddInstructionCombiningPass(pass);
   // LLVMAddReassociatePass(pass);

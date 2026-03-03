@@ -6,10 +6,13 @@
 #include <llvm-c/Core.h>
 #include <llvm-c/TargetMachine.h>
 
-/*
- * Opaque Codegen Context
- */
-typedef struct codegen_context codegen_context_t;
+typedef struct codegen_context {
+  LLVMContextRef context;
+  LLVMModuleRef module;
+  LLVMBuilderRef builder;
+
+  LLVMTargetMachineRef target_machine;
+} codegen_context_t;
 
 /*
  * Error handling
