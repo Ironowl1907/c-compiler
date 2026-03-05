@@ -4,7 +4,7 @@
 #include "ast.h"
 #include <llvm-c/Types.h>
 #include <stdint.h>
-#define SYMBOL_TABLE_MAX 256;
+#define SYMBOL_TABLE_MAX 256
 
 typedef struct {
   const char *name;
@@ -27,16 +27,17 @@ typedef struct {
   symbol_table_t symbols;
 } codegen_context_t;
 
-////////////////////////////////////////////////////////
-//////////////////// Life Cycle /////////////////////////
-////////////////////////////////////////////////////////
+// ==================================================
+// =================== Live Cycle ====================
+// ==================================================
+
 codegen_context_t *codegen_ctx_create(ast_t *ast, const char *module_name);
 
 void codegen_ctx_destroy(codegen_context_t *ctx);
 
-////////////////////////////////////////////////////////
-//////////////////// Symbol Table ///////////////////////
-////////////////////////////////////////////////////////
+// ==================================================
+// ================ Sysmbol table ====================
+// ==================================================
 
 void sym_table_clear(symbol_table_t *tbl);
 
@@ -45,10 +46,40 @@ void sym_table_set(symbol_table_t *tbl, const char *name, size_t len,
 
 LLVMValueRef sym_table_get(symbol_table_t *tbl, const char *name, size_t len);
 
-////////////////////////////////////////////////////////
-//////////////////// Entry Point ////////////////////////
-////////////////////////////////////////////////////////
+// ==================================================
+// =============== Entry Point =======================
+// ==================================================
 
 void codegen_program(codegen_context_t *ctx, node_id program_node);
+
+// ===================================================
+// ============== Code Generation =====================
+// ===================================================
+
+LLVMValueRef codegen_binary_expr(codegen_context_t *ctx, node_id id);
+
+LLVMValueRef codegen_unary_expr(codegen_context_t *ctx, node_id id);
+
+LLVMValueRef codegen_literal_expr(codegen_context_t *ctx, node_id id);
+
+LLVMValueRef codegen_identifier_expr(codegen_context_t *ctx, node_id id);
+
+LLVMValueRef codegen_assign_expr(codegen_context_t *ctx, node_id id);
+
+LLVMValueRef codegen_call_expr(codegen_context_t *ctx, node_id id);
+
+// Return void, side-effect generate ir
+
+void codegen_expr_stmt(codegen_context_t *ctx, node_id id);
+
+void codegen_var_decl(codegen_context_t *ctx, node_id id);
+
+void codegen_block_stmt(codegen_context_t *ctx, node_id id);
+
+void codegen_if_stmt(codegen_context_t *ctx, node_id id);
+
+void codegen_while_stmt(codegen_context_t *ctx, node_id id);
+
+void codegen_return_stmt(codegen_context_t *ctx, node_id id);
 
 #endif
