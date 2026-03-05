@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Simple hash function
+static uint32_t sym_hash(const char *name, size_t len);
+
 codegen_context_t *codegen_ctx_create(ast_t *ast, const char *module_name) {
   codegen_context_t *ctx = malloc(sizeof *ctx);
   assert(ctx && "NULL allocating codegen context");
@@ -24,6 +27,15 @@ void codegen_ctx_destroy(codegen_context_t *ctx) {
   LLVMDisposeModule(ctx->module);
   LLVMContextDispose(ctx->context);
   free(ctx);
+}
+
+static uint32_t sym_hash(const char *name, size_t len) {
+  uint32_t h = 2166136261u;
+  for (size_t i = 0; i < len; i++) {
+    h ^= (unsigned char)name[i];
+    h *= 16777619u;
+  }
+  return h;
 }
 
 void sym_table_clear(symbol_table_t *tbl) { memset(tbl, 0, sizeof(*tbl)); }
