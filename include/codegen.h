@@ -18,7 +18,7 @@ typedef struct {
 } symbol_table_t;
 
 typedef struct {
-  ast_t ast;
+  ast_t* ast;
 
   LLVMContextRef context;
   LLVMModuleRef module;
@@ -81,5 +81,7 @@ void codegen_if_stmt(codegen_context_t *ctx, node_id id);
 void codegen_while_stmt(codegen_context_t *ctx, node_id id);
 
 void codegen_return_stmt(codegen_context_t *ctx, node_id id);
+
+void codegen_function(codegen_context_t *ctx, node_id id);
 
 #endif
