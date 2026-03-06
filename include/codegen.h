@@ -18,7 +18,7 @@ typedef struct {
 } symbol_table_t;
 
 typedef struct {
-  ast_t* ast;
+  ast_t *ast;
 
   LLVMContextRef context;
   LLVMModuleRef module;
@@ -55,6 +55,9 @@ void codegen_program(codegen_context_t *ctx, node_id program_node);
 // ===================================================
 // ============== Code Generation =====================
 // ===================================================
+
+// Entry generic node codegen
+LLVMValueRef coden_node(codegen_context_t *ctx, node_id nodeid);
 
 LLVMValueRef codegen_binary_expr(codegen_context_t *ctx, node_id id);
 

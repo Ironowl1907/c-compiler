@@ -1,9 +1,13 @@
 #include "codegen.h"
+#include "ast.h"
 #include <assert.h>
 #include <llvm-c/Core.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define GET_NODE(ctx, id) (&(ctx)->ast->nodes[(id)])
 
 // Simple hash function
 static uint32_t sym_hash(const char *name, size_t len);
@@ -76,7 +80,70 @@ LLVMValueRef sym_table_get(symbol_table_t *tbl, const char *name, size_t len) {
   return NULL;
 }
 
-void codegen_program(codegen_context_t *ctx, node_id program_node) {}
+void codegen_program(codegen_context_t *ctx, node_id program_node) {
+  node_t *node = GET_NODE(ctx, program_node);
+  program_t *program = &node->as.program;
+
+  for (uint32_t i = 0; i < program->size; ++i) {
+    node_id stmt_id = program->statements[i];
+    node_t *stmt = GET_NODE(ctx, stmt_id);
+
+    if (stmt->type == NODE_FUNCTION) {
+      codegen_function(ctx, stmt_id);
+    } else {
+      printf("[Codegen ERROR]: Top-level node isn't a function, instead: %d\n",
+             stmt->type);
+    }
+  }
+}
+
+LLVMValueRef coden_node(codegen_context_t *ctx, node_id nodeid) {
+  assert(ctx);
+  assert(nodeid && "Node can't ");
+
+  switch (GET_NODE(ctx, nodeid)->type) {
+  case NODE_BINARY_EXPR:
+    return codegen_binary_expr(ctx, nodeid);
+  case NODE_UNARY_EXPR:
+    return codegen_unary_expr(ctx, nodeid);
+  case NODE_LITERAL_EXPR:
+    return codegen_literal_expr(ctx, nodeid);
+  case NODE_IDENTIFIER_EXPR:
+    return codegen_identifier_expr(ctx, nodeid);
+  case NODE_ASSIGN_EXPR:
+    return codegen_assign_expr(ctx, nodeid);
+  case NODE_CALL_EXPR:
+    return codegen_call_expr(ctx, nodeid);
+  case NODE_EXPR_STMT:
+    codegen_expr_stmt(ctx, nodeid);
+    return NULL;
+  case NODE_VAR_DECL_STMT:
+    codegen_var_decl(ctx, nodeid);
+    return NULL;
+  case NODE_BLOCK_STMT:
+    codegen_block_stmt(ctx, nodeid);
+    return NULL;
+  case NODE_IF_STMT:
+    codegen_if_stmt(ctx, nodeid);
+    return NULL;
+  case NODE_WHILE_STMT:
+    codegen_if_stmt(ctx, nodeid);
+    return NULL;
+  case NODE_RETURN_STMT:
+    codegen_return_stmt(ctx, nodeid);
+    return NULL;
+  case NODE_FUNCTION:
+    codegen_function(ctx, nodeid);
+    return NULL;
+  case NODE_PROGRAM:
+    codegen_program(ctx, nodeid);
+    return NULL;
+  default:
+    printf("[Codegen ERROR]: Unhandled enum, for codegen: %d\n",
+           GET_NODE(ctx, nodeid)->type);
+    return NULL;
+  }
+}
 
 LLVMValueRef codegen_binary_expr(codegen_context_t *ctx, node_id id) {}
 
