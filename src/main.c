@@ -57,11 +57,11 @@ int main(int argc, char *argv[]) {
 #endif
 
   // Code generation
-  codegen_error_t err;
-  codegen_context_t *codegen = codegen_create("ccodegeneration", &err);
-  if (err != CODEGEN_OK) {
-    printf("[Codegen Error]: Error on creation,err id: %d", err);
-  }
+  // codegen_error_t err;
+  // codegen_context_t *codegen = codegen_create("ccodegeneration", &err);
+  // if (err != CODEGEN_OK) {
+  //   printf("[Codegen Error]: Error on creation,err id: %d", err);
+  // }
 
   // Cleanup
   lexer_delete(lexer);

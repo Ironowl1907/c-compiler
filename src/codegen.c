@@ -98,7 +98,7 @@ void codegen_program(codegen_context_t *ctx, node_id program_node) {
   }
 }
 
-LLVMValueRef coden_node(codegen_context_t *ctx, node_id nodeid) {
+LLVMValueRef codegen_node(codegen_context_t *ctx, node_id nodeid) {
   assert(ctx);
   assert(nodeid && "Node can't ");
 
@@ -182,6 +182,15 @@ void codegen_if_stmt(codegen_context_t *ctx, node_id id) {}
 
 void codegen_while_stmt(codegen_context_t *ctx, node_id id) {}
 
-void codegen_return_stmt(codegen_context_t *ctx, node_id id) {}
+void codegen_return_stmt(codegen_context_t *ctx, node_id id) {
+  node_t *node = GET_NODE(ctx, id);
+
+  LLVMValueRef return_value = codegen_node(ctx, id);
+  if (!return_value) {
+    printf("[Codegen Error]: No return value");
+  }
+
+  LLVMBuildRet(ctx->builder, return_value);
+}
 
 void codegen_function(codegen_context_t *ctx, node_id id) {}

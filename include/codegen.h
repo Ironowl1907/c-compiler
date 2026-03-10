@@ -57,7 +57,7 @@ void codegen_program(codegen_context_t *ctx, node_id program_node);
 // ===================================================
 
 // Entry generic node codegen
-LLVMValueRef coden_node(codegen_context_t *ctx, node_id nodeid);
+LLVMValueRef codegen_node(codegen_context_t *ctx, node_id nodeid);
 
 LLVMValueRef codegen_binary_expr(codegen_context_t *ctx, node_id id);
 
