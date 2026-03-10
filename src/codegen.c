@@ -2,6 +2,7 @@
 #include "ast.h"
 #include <assert.h>
 #include <llvm-c/Core.h>
+#include <llvm-c/Types.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -149,7 +150,21 @@ LLVMValueRef codegen_binary_expr(codegen_context_t *ctx, node_id id) {}
 
 LLVMValueRef codegen_unary_expr(codegen_context_t *ctx, node_id id) {}
 
-LLVMValueRef codegen_literal_expr(codegen_context_t *ctx, node_id id) {}
+LLVMValueRef codegen_literal_expr(codegen_context_t *ctx, node_id id) {
+  // Get value from node id
+  node_t *node = GET_NODE(ctx, id);
+
+  // HACK: WE are only using integers for the moment
+
+  // Create llvmtypedef in context
+  LLVMTypeRef type = LLVMInt32TypeInContext(ctx->context);
+
+  // Create llvmvalueref from typedef
+  LLVMValueRef value = LLVMConstInt(type, node->as.literal_expr.value, 1);
+
+  // Return
+  return value;
+}
 
 LLVMValueRef codegen_identifier_expr(codegen_context_t *ctx, node_id id) {}
 
